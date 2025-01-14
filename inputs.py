@@ -310,13 +310,24 @@ def getInstrumentReadings(
     
     start_date = (report_period[0] - datetime.timedelta(days=buffer_start)).strftime('%Y-%m-%d %H:%M:%S')
     end_date = (report_period[1] + datetime.timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
-    response = rq.post('{}/api/get_instrument_data'.format(url),
-                                headers=headers,
-                                data={'instruments': ','.join([instrument.id for instrument in instruments.values()]),
-                                    'from_date': start_date,
-                                    'to_date': end_date
-                                })
-    readings_dict = json.loads(response.text)
+
+    readings_dict = {}
+    num_chunks = 1
+    request_success = False
+    while not request_success:
+        for chunk in np.array_split([instrument for instrument in instruments], num_chunks):
+            response = rq.get('{}/api/get_instrument_data'.format(url),
+                            headers=headers,
+                            data={'instruments': ','.join(chunk),
+                                'from_date': start_date,
+                                'to_date': end_date
+                            })
+            if response.status_code == 414:
+                break
+            else:
+                readings_dict.update(json.loads(response.text))
+        request_success = response.status_code != 414
+        num_chunks += 1
 
     if isinstance(readings_dict, dict):
         for name, data_dict in readings_dict.items():
