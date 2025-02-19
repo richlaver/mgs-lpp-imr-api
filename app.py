@@ -214,17 +214,17 @@ if get_data:
     #         inclinometer_displacement_fields=inclinometer_displacement_fields
     #     )
 
+    # Find start and end readings, and the change between the two
+    st.session_state.instruments = processes.findSummaryOutput(
+        instruments=st.session_state.instruments,
+        report_period=report_period
+    )
+
     # Find the readings most exceeding the review levels
     st.session_state.instruments = processes.findMaxExceedance(
         instruments=st.session_state.instruments,
         report_period=report_period,
         period_exceedances=period_exceedances
-    )
-
-    # Find start and end readings, and the change between the two
-    st.session_state.instruments = processes.findSummaryOutput(
-        instruments=st.session_state.instruments,
-        report_period=report_period
     )
 
     # Calculate differences in reading at period end between an IMC and Contractor pair

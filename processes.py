@@ -205,8 +205,8 @@ def findMaxExceedance(
         for field_name in field_names:
             if instrument.start_reading is not None:
                 readings = instrument.readings.loc[instrument.readings['Timestamp'] >= {
-                    False: instrument.start_reading,
-                    True: report_period[0]
+                    False: instrument.start_reading['Timestamp'],
+                    True: pd.to_datetime(report_period[0])
                 }[period_exceedances]]
             else:
                 readings = instrument.readings
@@ -273,11 +273,16 @@ def collatePlotData(instruments: dict) -> pd.DataFrame:
         field_name,
         instrument.easting,
         instrument.northing,
+        instrument.date_installed,
         instrument.start_reading[field_name] if instrument.start_reading is not None else None,
         field_value,
         instrument.change[field_name] if instrument.change is not None else None,
+        abs(instrument.change[field_name]) if instrument.change is not None else None,
+        1/math.tan(math.radians(abs(instrument.change[field_name]))) if instrument.change is not None and instrument.change[field_name] != 0 and all(x in str(field_name).lower() for x in ['deg', 'change']) else None,
+        1/abs(instrument.change[field_name]) if instrument.change is not None and instrument.change[field_name] != 0 and any(x in str(field_name).lower() for x in ['tilt', 'ratio', 'gradient']) and 'change' in str(field_name).lower() else None,
         instrument.max_in_period[field_name] if instrument.max_in_period is not None else None,
         instrument.min_in_period[field_name] if instrument.min_in_period is not None else None,
+        instrument.max_in_period[field_name] - instrument.min_in_period[field_name] if instrument.max_in_period is not None and instrument.min_in_period is not None and instrument.max_in_period[field_name] is not None and instrument.min_in_period[field_name] is not None else None,
         instrument.start_reading['Timestamp'] if instrument.start_reading is not None else None,
         instrument.end_reading['Timestamp'],
         instrument.change['Timestamp'] if instrument.change is not None else None,
@@ -311,11 +316,16 @@ def collatePlotData(instruments: dict) -> pd.DataFrame:
             'field_name',
             'easting',
             'northing',
+            'installation_date',
             'start_value',
             'end_value',
             'change_value',
+            'abs_change',
+            'gradient_from_degrees',
+            'gradient_from_ratio',
             'max_in_period_value',
             'min_in_period_value',
+            'range_in_period',
             'start_date',
             'end_date',
             'change_period',
