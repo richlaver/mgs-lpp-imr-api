@@ -48,8 +48,8 @@ def findSummaryOutput(instruments: dict, report_period: tuple) -> dict:
                         instrument.start_reading = readings.iloc[readings['Timestamp'].loc[readings['Timestamp'] <= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].idxmax()]
                         instrument.change = instrument.end_reading - instrument.start_reading
                     if not readings.loc[(readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1)))].empty:
-                        instrument.max_in_period = readings.max(axis=0)
-                        instrument.min_in_period = readings.min(axis=0)
+                        instrument.max_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].max(axis=0)
+                        instrument.min_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].min(axis=0)
 
     status_container.update(
         label='Found summary output!',
