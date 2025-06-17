@@ -47,9 +47,9 @@ def findSummaryOutput(instruments: dict, report_period: tuple) -> dict:
                     if not readings.loc[readings['Timestamp'] <= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].empty:
                         instrument.start_reading = readings.iloc[readings['Timestamp'].loc[readings['Timestamp'] <= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].idxmax()]
                         instrument.change = instrument.end_reading - instrument.start_reading
-                    if not readings.loc[(readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1)))].empty:
-                        instrument.max_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].max(axis=0)
-                        instrument.min_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0] + datetime.timedelta(days=1))].min(axis=0)
+                    if not readings.loc[(readings['Timestamp'] >= pd.to_datetime(report_period[0]))].empty:
+                        instrument.max_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0])].max(axis=0)
+                        instrument.min_in_period = readings.loc[readings['Timestamp'] >= pd.to_datetime(report_period[0])].min(axis=0)
 
     status_container.update(
         label='Found summary output!',
@@ -226,12 +226,12 @@ def findMaxExceedance(
                 match review_direction:
                     case 'upper':
                         instrument.maxexceedance.setdefault(field_name, {})[review_direction] = {
-                            'maxabs_reading': exceeding_readings.iloc[exceeding_readings[field_name].idxmax()],
+                            'maxabs_reading': exceeding_readings.loc[exceeding_readings[field_name].idxmax()],
                             'level': None
                         }
                     case 'lower':
                         instrument.maxexceedance.setdefault(field_name, {})[review_direction] = {
-                            'maxabs_reading': exceeding_readings.iloc[exceeding_readings[field_name].idxmin()],
+                            'maxabs_reading': exceeding_readings.loc[exceeding_readings[field_name].idxmin()],
                             'level': None
                         }
 

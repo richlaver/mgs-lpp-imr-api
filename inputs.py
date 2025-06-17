@@ -318,6 +318,8 @@ def getInstrumentReadings(
                                 'to_date': end_date
                             })
     readings_dict = json.loads(response.text)
+    # st.write('readings_dict:')
+    # st.write(readings_dict)
 
     if isinstance(readings_dict, dict):
         for name, data_dict in readings_dict.items():
@@ -325,6 +327,9 @@ def getInstrumentReadings(
                 continue
             dataframe_dict = {}
             for index, (timestamp, reading_data) in enumerate(data_dict.items()):
+                data_fields = [reading_data[key] for key in reading_data if key not in ['Easting', 'Northing']]
+                if all(value == '' for value in data_fields):
+                    continue
                 dataframe_dict[index] = {'Timestamp': datetime.datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')}
                 dataframe_dict[index].update(reading_data)
                 for key, value in dataframe_dict[index].items():
@@ -334,10 +339,11 @@ def getInstrumentReadings(
                         except:
                             dataframe_dict[index][key] = None
             data_df = pd.DataFrame.from_dict(dataframe_dict, 'index')
-            try:
-                instruments[name].readings = data_df
-            except:
-                pass
+            if not data_df.empty:
+                try:
+                    instruments[name].readings = data_df
+                except:
+                    pass
 
     status_container.update(
         label='Readings downloaded!',
